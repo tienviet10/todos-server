@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { requireSignin } = require("../controllers/auth");
+const { requireSignIn } = require("../controllers/auth");
 const {
   create,
   remove,
@@ -12,26 +12,26 @@ const {
 const { runValidation } = require("../validators");
 const { reminderCheck } = require("../validators/reminder");
 
-router.get("/getmainreminders", requireSignin, read);
+router.get("/v1/reminders/active", requireSignIn, read);
 
-router.get("/getpastreminders", requireSignin, readInactive);
+router.get("/v1/reminders/past", requireSignIn, readInactive);
 
 router.post(
-  "/addreminder",
+  "/v1/reminder",
   reminderCheck,
   runValidation,
-  requireSignin,
+  requireSignIn,
   create
 );
 
 router.put(
-  "/editreminder/:id",
+  "/v1/reminder/:id",
   reminderCheck,
   runValidation,
-  requireSignin,
+  requireSignIn,
   update
 );
 
-router.delete("/deletereminder/:id", requireSignin, remove);
+router.delete("/v1/reminder/:id", requireSignIn, remove);
 
 module.exports = router;

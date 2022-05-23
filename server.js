@@ -11,7 +11,7 @@ require("dotenv").config();
 //   res.send("this is from backend");
 // });
 
-// app middlewares
+// app middleware
 app.use(morgan("dev"));
 app.use(bodyParser.json({ limit: "5mb", type: "application/json" }));
 app.use(cors({ origin: process.env.CLIENT_URL }));

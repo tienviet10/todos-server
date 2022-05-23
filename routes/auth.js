@@ -16,15 +16,15 @@ const {
   // registerActivate,
   login,
   userFromToken,
-  requireSignin,
+  requireSignIn,
   // forgotPassword,
   // resetPassword,
 } = require("../controllers/auth");
 
-router.post("/register", userRegisterValidator, runValidation, register);
+router.post("/v1/register", userRegisterValidator, runValidation, register);
 // router.post("/register/activate", registerActivate);
-router.post("/login", userLoginValidator, runValidation, login);
-router.get("/userauth", requireSignin, userFromToken);
+router.post("/v1/login", userLoginValidator, runValidation, login);
+router.get("/v1/user-auth", requireSignIn, userFromToken);
 
 // router.put(
 //   "/forgot-password",
@@ -39,7 +39,7 @@ router.get("/userauth", requireSignin, userFromToken);
 //   resetPassword
 // );
 
-// router.get('/secret', requireSignin, (req, res) => {
+// router.get('/secret', requireSignIn, (req, res) => {
 //     res.json({
 //         data: 'This is secret page for logged in users only'
 //     });

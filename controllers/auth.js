@@ -79,7 +79,7 @@ exports.register = (req, res) => {
           error: "Error saving user in database. Try later",
         });
       }
-      return res.json({
+      return res.status(200).json({
         message: "Registration success. Please login.",
       });
     });
@@ -153,7 +153,7 @@ exports.login = (req, res) => {
     });
     // const { _id, username, email, role } = user;
 
-    return res.json({
+    return res.status(200).json({
       token,
       // user: { _id, username, email, role },
     });
@@ -177,14 +177,14 @@ exports.userFromToken = (req, res) => {
     });
     const { _id, username, email, role } = user;
 
-    return res.json({
+    return res.status(200).json({
       token,
       user: { _id, username, email, role },
     });
   });
 };
 
-exports.requireSignin = expressjwt({
+exports.requireSignIn = expressjwt({
   secret: process.env.JWT_SECRET,
   algorithms: ["HS256"],
 }); // req.user

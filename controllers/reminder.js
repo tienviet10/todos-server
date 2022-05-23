@@ -12,7 +12,7 @@ exports.read = (req, res) => {
         });
       }
 
-      res.json(data);
+      res.status(200).json(data);
     });
 };
 
@@ -27,20 +27,20 @@ exports.readInactive = (req, res) => {
         });
       }
 
-      res.json(data);
+      res.status(200).json(data);
     });
 };
 
 exports.create = (req, res) => {
-  let reminder = new Reminder(req.body);
+  const reminder = new Reminder(req.body);
   reminder.postedBy = req.auth._id;
   reminder.save((err, data) => {
     if (err) {
       return res.status(400).json({
-        error: "Reminder error occured when saving to the database",
+        error: "Reminder error occurred when saving to the database",
       });
     }
-    res.json({
+    res.status(200).json({
       _id: data._id,
       title: data.title,
       description: data.description,
@@ -64,11 +64,11 @@ exports.remove = (req, res) => {
         });
       }
       if (data === null) {
-        res.json({
+        res.status(200).json({
           message: "Cannot find the requested reminder",
         });
       } else {
-        res.json({
+        res.status(200).json({
           message: "Reminder removed successfully",
         });
       }
@@ -86,7 +86,7 @@ exports.update = async (req, res) => {
       });
     }
     if (updated.postedBy.equals(req.auth._id)) {
-      let newUpdate = {
+      const newUpdate = {
         description: req.body.description,
         title: req.body.title,
         status: req.body.status,
@@ -100,7 +100,7 @@ exports.update = async (req, res) => {
             error: "Error updating reminder",
           });
         }
-        res.json({
+        res.status(200).json({
           title: newUpdate.title,
           description: newUpdate.description,
           status: newUpdate.status,
