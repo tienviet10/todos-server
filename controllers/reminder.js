@@ -3,7 +3,9 @@ const Reminder = require("../models/reminder");
 
 exports.read = (req, res) => {
   Reminder.find({ postedBy: req.auth._id, status: "active" })
-    .select("title description status favorite color createdAt updatedAt")
+    .select(
+      "title description status favorite color createdAt updatedAt remindedAt"
+    )
     .sort({ createdAt: -1 })
     .exec((err, data) => {
       if (err) {
@@ -12,7 +14,7 @@ exports.read = (req, res) => {
         });
       }
 
-      res.status(200).json(data);
+      res.json(data);
     });
 };
 
@@ -27,7 +29,7 @@ exports.readInactive = (req, res) => {
         });
       }
 
-      res.status(200).json(data);
+      res.json(data);
     });
 };
 
@@ -40,7 +42,7 @@ exports.create = (req, res) => {
         error: "Reminder error occurred when saving to the database",
       });
     }
-    res.status(200).json({
+    res.json({
       _id: data._id,
       title: data.title,
       description: data.description,
@@ -49,6 +51,7 @@ exports.create = (req, res) => {
       color: data.color,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      remindedAt: data.remindedAt,
     });
   });
 };
@@ -64,11 +67,11 @@ exports.remove = (req, res) => {
         });
       }
       if (data === null) {
-        res.status(200).json({
+        res.json({
           message: "Cannot find the requested reminder",
         });
       } else {
-        res.status(200).json({
+        res.json({
           message: "Reminder removed successfully",
         });
       }
@@ -92,6 +95,7 @@ exports.update = async (req, res) => {
         status: req.body.status,
         favorite: req.body.favorite,
         color: req.body.color,
+        remindedAt: req.body.remindedAt,
       };
 
       return updated.updateOne(newUpdate, (err, success) => {
@@ -100,12 +104,13 @@ exports.update = async (req, res) => {
             error: "Error updating reminder",
           });
         }
-        res.status(200).json({
+        res.json({
           title: newUpdate.title,
           description: newUpdate.description,
           status: newUpdate.status,
           favorite: newUpdate.favorite,
           color: newUpdate.color,
+          remindedAt: newUpdate.remindedAt,
           createdAt: updated.createdAt,
           updatedAt: updated.updatedAt,
         });

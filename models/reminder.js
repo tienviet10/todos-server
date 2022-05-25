@@ -23,6 +23,9 @@ const userSchema = new mongoose.Schema(
     color: {
       type: String,
     },
+    remindedAt: {
+      type: Date,
+    },
     postedBy: {
       type: ObjectId,
       ref: "User",
