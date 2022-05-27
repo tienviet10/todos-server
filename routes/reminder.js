@@ -8,6 +8,7 @@ const {
   update,
   read,
   readInactive,
+  readAReminder,
 } = require("../controllers/reminder");
 const { runValidation } = require("../validators");
 const { reminderCheck } = require("../validators/reminder");
@@ -15,6 +16,8 @@ const { reminderCheck } = require("../validators/reminder");
 router.get("/v1/reminders/active", requireSignIn, read);
 
 router.get("/v1/reminders/past", requireSignIn, readInactive);
+
+router.get("/v1/reminder/:id", requireSignIn, readAReminder);
 
 router.post(
   "/v1/reminder",
@@ -24,13 +27,7 @@ router.post(
   create
 );
 
-router.put(
-  "/v1/reminder/:id",
-  reminderCheck,
-  runValidation,
-  requireSignIn,
-  update
-);
+router.put("/v1/reminder/:id", requireSignIn, update);
 
 router.delete("/v1/reminder/:id", requireSignIn, remove);
 
