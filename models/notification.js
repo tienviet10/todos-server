@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema(
     },
     remindedAt: {
       type: Date,
-      required: true,
     },
     seen: {
       type: Boolean,

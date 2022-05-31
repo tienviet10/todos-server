@@ -19,6 +19,31 @@ exports.read = (req, res) => {
     });
 };
 
+exports.readSevenDays = (req, res) => {
+  Reminder.find({
+    postedBy: req.auth._id,
+    status: "active",
+    remindedAt: {
+      $gte: new Date(new Date().setHours(0, 0, 0)),
+      $lt: new Date(new Date().setDate(new Date().getDate() + 7)),
+      //$lt: new Date(new Date().setHours(23, 59, 59)),
+    },
+  })
+    .select(
+      "title description status favorite color createdAt updatedAt remindedAt"
+    )
+    .sort({ remindedAt: 1 })
+    .exec((err, data) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Cannot retrieve reminders",
+        });
+      }
+
+      res.json(data);
+    });
+};
+
 exports.readInactive = (req, res) => {
   Reminder.find({ postedBy: req.auth._id, status: "deactive" })
     .select("title description status favorite color createdAt updatedAt")
@@ -32,6 +57,51 @@ exports.readInactive = (req, res) => {
 
       res.json(data);
     });
+};
+
+exports.deactivePastDue = (req, res) => {
+  for (const reminder of req.body) {
+    Reminder.findOne({ _id: reminder._id, postedBy: req.auth._id }).exec(
+      (err, updated) => {
+        if (err) {
+          return res.status(400).json({
+            error: "Error updating reminder",
+          });
+        }
+        const newUpdate = {
+          status: reminder.status,
+          remindedAt: null,
+        };
+
+        return updated.updateOne(newUpdate, (err, success) => {
+          if (err) {
+            return res.status(400).json({
+              error: "Error updating reminder",
+            });
+          }
+
+          Notification.findOneAndUpdate(
+            { reminderID: reminder._id },
+            {
+              status: reminder.status,
+              remindedAt: null,
+              seen: updated.status === "deactive" && false,
+            },
+            (err, success) => {
+              if (err) {
+                return res.status(400).json({
+                  error: "Error updating reminder notification",
+                });
+              }
+            }
+          );
+        });
+      }
+    );
+  }
+  res.json({
+    message: "Successfully update due reminders",
+  });
 };
 
 exports.create = (req, res) => {
@@ -111,63 +181,118 @@ exports.remove = (req, res) => {
 exports.update = async (req, res) => {
   const { id } = req.params;
 
-  Reminder.findOne({ _id: id }).exec((err, updated) => {
+  Reminder.findOne({ _id: id, postedBy: req.auth._id }).exec((err, updated) => {
     if (err) {
       return res.status(400).json({
-        error: "Error finding the reminder",
+        error: "Error updating reminder",
       });
     }
-    if (updated.postedBy.equals(req.auth._id)) {
-      const newUpdate = {
-        description: req.body.description,
-        title: req.body.title,
-        status: req.body.status,
-        favorite: req.body.favorite,
-        color: req.body.color,
-        remindedAt: req.body.remindedAt,
-      };
+    const newUpdate = {
+      description: req.body.description,
+      title: req.body.title,
+      status: req.body.status,
+      favorite: req.body.favorite,
+      color: req.body.color,
+      remindedAt: req.body.remindedAt,
+    };
 
-      return updated.updateOne(newUpdate, (err, success) => {
-        if (err) {
-          return res.status(400).json({
-            error: "Error updating reminder",
-          });
-        }
+    return updated.updateOne(newUpdate, (err, success) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Error updating reminder",
+        });
+      }
 
-        Notification.findOneAndUpdate(
-          { reminderID: id },
-          {
-            title: req.body.title,
-            remindedAt: req.body.remindedAt,
-            status: req.body.status,
-            seen: updated.status === "deactive" && false,
-          },
-          (err, success) => {
-            if (err) {
-              return res.status(400).json({
-                error: "Error updating reminder notification",
-              });
-            }
-            res.json({
-              title: updated.title,
-              description: updated.description,
-              status: updated.status,
-              favorite: updated.favorite,
-              color: updated.color,
-              remindedAt: updated.remindedAt,
-              createdAt: updated.createdAt,
-              updatedAt: updated.updatedAt,
+      Notification.findOneAndUpdate(
+        { reminderID: id },
+        {
+          title: req.body.title,
+          remindedAt: req.body.remindedAt,
+          status: req.body.status,
+          seen: updated.status === "deactive" && false,
+        },
+        (err, success) => {
+          if (err) {
+            return res.status(400).json({
+              error: "Error updating reminder notification",
             });
           }
-        );
-      });
-    } else {
-      return res.status(400).json({
-        error: "Error processing update",
-      });
-    }
+          res.json({
+            title: updated.title,
+            description: updated.description,
+            status: updated.status,
+            favorite: updated.favorite,
+            color: updated.color,
+            remindedAt: updated.remindedAt,
+            createdAt: updated.createdAt,
+            updatedAt: updated.updatedAt,
+          });
+        }
+      );
+    });
   });
 };
+
+// exports.update = async (req, res) => {
+//   const { id } = req.params;
+
+//   Reminder.findOne({ _id: id }).exec((err, updated) => {
+//     if (err) {
+//       return res.status(400).json({
+//         error: "Error finding the reminder",
+//       });
+//     }
+//     if (updated.postedBy.equals(req.auth._id)) {
+//       const newUpdate = {
+//         description: req.body.description,
+//         title: req.body.title,
+//         status: req.body.status,
+//         favorite: req.body.favorite,
+//         color: req.body.color,
+//         remindedAt: req.body.remindedAt,
+//       };
+
+//       return updated.updateOne(newUpdate, (err, success) => {
+//         if (err) {
+//           return res.status(400).json({
+//             error: "Error updating reminder",
+//           });
+//         }
+
+//         Notification.findOneAndUpdate(
+//           { reminderID: id },
+//           {
+//             title: req.body.title,
+//             remindedAt: req.body.remindedAt,
+//             status: req.body.status,
+//             seen: updated.status === "deactive" && false,
+//           },
+//           (err, success) => {
+//             if (err) {
+//               return res.status(400).json({
+//                 error: "Error updating reminder notification",
+//               });
+//             }
+//             res.json({
+//               title: updated.title,
+//               description: updated.description,
+//               status: updated.status,
+//               favorite: updated.favorite,
+//               color: updated.color,
+//               remindedAt: updated.remindedAt,
+//               createdAt: updated.createdAt,
+//               updatedAt: updated.updatedAt,
+//             });
+//           }
+//         );
+//       });
+//     } else {
+//       return res.status(400).json({
+//         error: "Error processing update",
+//       });
+//     }
+//   });
+// };
 
 exports.readAReminder = (req, res) => {
   const { id } = req.params;
