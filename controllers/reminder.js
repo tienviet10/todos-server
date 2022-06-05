@@ -46,7 +46,9 @@ exports.readSevenDays = (req, res) => {
 
 exports.readInactive = (req, res) => {
   Reminder.find({ postedBy: req.auth._id, status: "deactive" })
-    .select("title description status favorite color createdAt updatedAt")
+    .select(
+      "title description status favorite color createdAt updatedAt remindedAt"
+    )
     .sort({ createdAt: -1 })
     .exec((err, data) => {
       if (err) {
@@ -70,7 +72,7 @@ exports.deactivePastDue = (req, res) => {
         }
         const newUpdate = {
           status: reminder.status,
-          remindedAt: null,
+          //remindedAt: null,
         };
 
         return updated.updateOne(newUpdate, (err, success) => {
@@ -84,7 +86,7 @@ exports.deactivePastDue = (req, res) => {
             { reminderID: reminder._id },
             {
               status: reminder.status,
-              remindedAt: null,
+              //remindedAt: null,
               seen: updated.status === "deactive" && false,
             },
             (err, success) => {
@@ -107,6 +109,7 @@ exports.deactivePastDue = (req, res) => {
 exports.create = (req, res) => {
   const reminder = new Reminder(req.body);
   reminder.postedBy = req.auth._id;
+
   reminder.save((err, data) => {
     if (err) {
       return res.status(400).json({
