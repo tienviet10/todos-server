@@ -26,6 +26,9 @@ const userSchema = new mongoose.Schema(
     remindedAt: {
       type: Date,
     },
+    repeat: {
+      type: String,
+    },
     postedBy: {
       type: ObjectId,
       ref: "User",

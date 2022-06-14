@@ -3,6 +3,14 @@ const User = require("../models/user");
 //const AWS = require("aws-sdk");
 const jwt = require("jsonwebtoken");
 var { expressjwt: expressjwt } = require("express-jwt");
+
+const { google } = require("googleapis");
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.CLIENT_URL
+);
+
 // const {
 //   registerEmailParams,
 //   forgotPasswordEmailParams,
@@ -328,3 +336,37 @@ exports.requireSignIn = expressjwt({
 //     next();
 //   });
 // };
+
+exports.createToken = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const response = await oauth2Client.getToken(code);
+
+    if (response.res.status === 200) {
+      const _id = req.auth._id;
+
+      User.findOneAndUpdate(
+        { _id: _id },
+        {
+          refreshToken: response.tokens.refresh_token,
+        },
+        (err, success) => {
+          if (err) {
+            return res.status(400).json({
+              error: "Error updating reminder notification",
+            });
+          }
+          res.send("Authorization successful!");
+        }
+      );
+    } else {
+      return res.status(400).json({
+        error: "Error authorizing token 2",
+      });
+    }
+  } catch (e) {
+    return res.status(400).json({
+      error: "Error authorizing token 1",
+    });
+  }
+};

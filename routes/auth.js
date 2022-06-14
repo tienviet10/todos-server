@@ -19,12 +19,14 @@ const {
   requireSignIn,
   // forgotPassword,
   // resetPassword,
+  createToken,
 } = require("../controllers/auth");
 
 router.post("/v1/register", userRegisterValidator, runValidation, register);
 // router.post("/register/activate", registerActivate);
 router.post("/v1/login", userLoginValidator, runValidation, login);
 router.get("/v1/user-auth", requireSignIn, userFromToken);
+router.post("/v1/create-tokens", requireSignIn, createToken);
 
 // router.put(
 //   "/forgot-password",

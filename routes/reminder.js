@@ -11,7 +11,10 @@ const {
   readAReminder,
   readSevenDays,
   deactivePastDue,
+  updateAll,
+  createAnEvent,
 } = require("../controllers/reminder");
+
 const { runValidation } = require("../validators");
 const { reminderCheck } = require("../validators/reminder");
 
@@ -23,7 +26,7 @@ router.put("/v1/reminders/past", requireSignIn, deactivePastDue);
 
 router.get("/v1/reminders/seven-days-reminders", requireSignIn, readSevenDays);
 
-router.get("/v1/reminder/:id", requireSignIn, readAReminder);
+router.put("/v1/reminders", requireSignIn, updateAll);
 
 router.post(
   "/v1/reminder",
@@ -36,5 +39,9 @@ router.post(
 router.put("/v1/reminder/:id", requireSignIn, update);
 
 router.delete("/v1/reminder/:id", requireSignIn, remove);
+
+router.get("/v1/reminder/:id", requireSignIn, readAReminder);
+
+router.post("/v1/reminder/google-calendar", requireSignIn, createAnEvent);
 
 module.exports = router;

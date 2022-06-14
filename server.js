@@ -14,7 +14,7 @@ require("dotenv").config();
 // app middleware
 app.use(morgan("dev"));
 app.use(bodyParser.json({ limit: "5mb", type: "application/json" }));
-app.use(cors({ origin: process.env.CLIENT_URL }));
+app.use(cors({ origin: "*" }));
 app.use(helmet());
 
 const authRoutes = require("./routes/auth");

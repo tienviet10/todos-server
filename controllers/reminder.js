@@ -1,11 +1,22 @@
 const { json } = require("body-parser");
 const Reminder = require("../models/reminder");
 const Notification = require("../models/notification");
+const { google } = require("googleapis");
+const User = require("../models/user");
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.CLIENT_URL
+);
+
+const REFRESH_TOKEN =
+  "1//04ND2QR9UTeYfCgYIARAAGAQSNwF-L9IrpD0hZ9E8qXHPdXJpZpqEvWv9_8K5IyRJSqxfalEpLq-GV4G8OLntmvcaL6bDabaUMDM";
 
 exports.read = (req, res) => {
   Reminder.find({ postedBy: req.auth._id, status: "active" })
     .select(
-      "title description status favorite color createdAt updatedAt remindedAt"
+      "title description status favorite color createdAt updatedAt remindedAt repeat"
     )
     .sort({ remindedAt: 1 })
     .exec((err, data) => {
@@ -142,6 +153,7 @@ exports.create = (req, res) => {
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
         remindedAt: data.remindedAt,
+        repeat: data.repeat,
       });
     });
   });
@@ -157,15 +169,6 @@ exports.remove = (req, res) => {
           error: "Error removing the reminder",
         });
       }
-      // if (data === null) {
-      //   res.json({
-      //     message: "Cannot find the requested reminder",
-      //   });
-      // } else {
-      //   res.json({
-      //     message: "Reminder removed successfully",
-      //   });
-      // }
       Notification.findOneAndRemove({ reminderID: id }).exec((err, data) => {
         if (err) {
           return res.status(400).json({
@@ -190,6 +193,7 @@ exports.update = async (req, res) => {
         error: "Error updating reminder",
       });
     }
+
     const newUpdate = {
       description: req.body.description,
       title: req.body.title,
@@ -197,6 +201,7 @@ exports.update = async (req, res) => {
       favorite: req.body.favorite,
       color: req.body.color,
       remindedAt: req.body.remindedAt,
+      repeat: req.body.repeat,
     };
 
     return updated.updateOne(newUpdate, (err, success) => {
@@ -229,6 +234,7 @@ exports.update = async (req, res) => {
             remindedAt: updated.remindedAt,
             createdAt: updated.createdAt,
             updatedAt: updated.updatedAt,
+            repeat: updated.repeat,
           });
         }
       );
@@ -236,66 +242,98 @@ exports.update = async (req, res) => {
   });
 };
 
-// exports.update = async (req, res) => {
-//   const { id } = req.params;
+exports.updateAll = async (req, res) => {
+  for (const reminder of req.body) {
+    Reminder.findOne({ _id: reminder._id, postedBy: req.auth._id }).exec(
+      (err, updated) => {
+        if (err) {
+          return res.status(400).json({
+            error: "Error updating reminder",
+          });
+        }
+        const newUpdate = {
+          remindedAt: reminder.remindedAt,
+        };
 
-//   Reminder.findOne({ _id: id }).exec((err, updated) => {
-//     if (err) {
-//       return res.status(400).json({
-//         error: "Error finding the reminder",
-//       });
-//     }
-//     if (updated.postedBy.equals(req.auth._id)) {
-//       const newUpdate = {
-//         description: req.body.description,
-//         title: req.body.title,
-//         status: req.body.status,
-//         favorite: req.body.favorite,
-//         color: req.body.color,
-//         remindedAt: req.body.remindedAt,
-//       };
+        return updated.updateOne(newUpdate, (err, success) => {
+          if (err) {
+            return res.status(400).json({
+              error: "Error updating reminder",
+            });
+          }
 
-//       return updated.updateOne(newUpdate, (err, success) => {
-//         if (err) {
-//           return res.status(400).json({
-//             error: "Error updating reminder",
-//           });
-//         }
+          Notification.findOneAndUpdate(
+            { reminderID: reminder._id },
+            {
+              remindedAt: reminder.remindedAt,
+              seen: updated.status === "deactive" && false,
+            },
+            (err, success) => {
+              if (err) {
+                return res.status(400).json({
+                  error: "Error updating reminder notification",
+                });
+              }
+            }
+          );
+        });
+      }
+    );
+  }
+  res.json({
+    message: "Successfully update due reminders",
+  });
+};
 
-//         Notification.findOneAndUpdate(
-//           { reminderID: id },
-//           {
-//             title: req.body.title,
-//             remindedAt: req.body.remindedAt,
-//             status: req.body.status,
-//             seen: updated.status === "deactive" && false,
-//           },
-//           (err, success) => {
-//             if (err) {
-//               return res.status(400).json({
-//                 error: "Error updating reminder notification",
-//               });
-//             }
-//             res.json({
-//               title: updated.title,
-//               description: updated.description,
-//               status: updated.status,
-//               favorite: updated.favorite,
-//               color: updated.color,
-//               remindedAt: updated.remindedAt,
-//               createdAt: updated.createdAt,
-//               updatedAt: updated.updatedAt,
-//             });
-//           }
-//         );
-//       });
-//     } else {
-//       return res.status(400).json({
-//         error: "Error processing update",
-//       });
-//     }
-//   });
-// };
+exports.createAnEvent = async (req, res) => {
+  try {
+    const { summary, description, location, startTime, endTime, recurrence } =
+      req.body;
+
+    User.findOne({ _id: req.auth._id }).exec(async (err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: "User with that id does not exist.",
+        });
+      }
+      oauth2Client.setCredentials({ refresh_token: user.refreshToken });
+      const calendar = google.calendar("v3");
+
+      const event = {
+        summary: summary,
+        description: description,
+        colorId: "7",
+        start: {
+          dateTime: startTime,
+          timeZone: location,
+        },
+        end: {
+          dateTime: endTime,
+          timeZone: location,
+        },
+        reminders: {
+          useDefault: false,
+          overrides: [{ method: "popup", minutes: 1 }],
+        },
+      };
+      if (recurrence && recurrence !== "none") {
+        event["recurrence"] = [`RRULE:FREQ=${recurrence};COUNT=4`];
+      }
+
+      const response = await calendar.events.insert({
+        auth: oauth2Client,
+        calendarId: "primary",
+        requestBody: event,
+      });
+
+      res.send(response);
+    });
+  } catch (error) {
+    return res.status(400).json({
+      error: "Error creating event",
+    });
+  }
+};
 
 exports.readAReminder = (req, res) => {
   const { id } = req.params;
