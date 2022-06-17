@@ -36,6 +36,18 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    givenName: {
+      type: String,
+    },
+    familyName: {
+      type: String,
+    },
+    name: {
+      type: String,
+    },
+    picture: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

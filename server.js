@@ -7,10 +7,6 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
-// app.get("/", (req, res) => {
-//   res.send("this is from backend");
-// });
-
 // app middleware
 app.use(morgan("dev"));
 app.use(bodyParser.json({ limit: "5mb", type: "application/json" }));

@@ -183,11 +183,11 @@ exports.userFromToken = (req, res) => {
       // expiresIn: "5d",
       expiresIn: "5d",
     });
-    const { _id, username, email, role } = user;
+    const { _id, username, email, role, givenName, name, picture } = user;
 
     return res.json({
       token,
-      user: { _id, username, email, role },
+      user: { _id, username, email, role, givenName, name, picture },
     });
   });
 };
@@ -345,10 +345,17 @@ exports.createToken = async (req, res) => {
     if (response.res.status === 200) {
       const _id = req.auth._id;
 
+      const { given_name, family_name, name, picture } = jwt.decode(
+        response.tokens.id_token
+      );
       User.findOneAndUpdate(
         { _id: _id },
         {
           refreshToken: response.tokens.refresh_token,
+          givenName: given_name ? given_name : "",
+          familyName: family_name ? family_name : "",
+          name: name ? name : "",
+          picture: picture ? picture : "",
         },
         (err, success) => {
           if (err) {

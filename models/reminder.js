@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
       type: ObjectId,
       ref: "User",
     },
+    googleCalendarReminderID: {
+      type: String,
+    },
+    location: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
