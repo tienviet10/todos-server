@@ -162,6 +162,26 @@ exports.create = (req, res) => {
           });
         } catch (e) {
           console.log("Was not able to create a google calendar event");
+          //// If fails to use the refresh token, delete google related fields
+          User.findOneAndUpdate(
+            { _id: req.auth._id },
+            {
+              $unset: {
+                refreshToken: "",
+                accessToken: "",
+                givenName: "",
+                familyName: "",
+                name: "",
+                picture: "",
+              },
+            },
+            (err, success) => {
+              if (err) {
+                console.log("error");
+              }
+              console.log("success");
+            }
+          );
         }
       }
 

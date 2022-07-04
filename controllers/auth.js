@@ -184,10 +184,19 @@ exports.userFromToken = (req, res) => {
       expiresIn: "5d",
     });
     const { _id, username, email, role, givenName, name, picture } = user;
-
+    const jsonDetailsSendBack = {
+      _id,
+      username,
+      email,
+      role,
+      givenName,
+      name,
+      picture,
+      refreshToken: user.refreshToken ? 1 : 0,
+    };
     return res.json({
       token,
-      user: { _id, username, email, role, givenName, name, picture },
+      user: jsonDetailsSendBack,
     });
   });
 };
@@ -352,6 +361,7 @@ exports.createToken = async (req, res) => {
         { _id: _id },
         {
           refreshToken: response.tokens.refresh_token,
+          accessToken: response.tokens.access_token,
           givenName: given_name ? given_name : "",
           familyName: family_name ? family_name : "",
           name: name ? name : "",
@@ -376,4 +386,131 @@ exports.createToken = async (req, res) => {
       error: "Error authorizing token 1",
     });
   }
+};
+
+exports.deleteTokens = async (req, res) => {
+  const { id } = req.params;
+
+  User.findOneAndUpdate(
+    { _id: id },
+    {
+      $unset: {
+        refreshToken: "",
+        accessToken: "",
+        givenName: "",
+        familyName: "",
+        name: "",
+        picture: "",
+      },
+    },
+    (err, success) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Error removing fields for removing google calendar token!",
+        });
+      }
+      res.send("Remove google calendar token successful!");
+    }
+  );
+  // try {
+
+  //   User.findOne({ _id: id }).exec(async (err, user) => {
+  //     if (err || !user) {
+  //       return res.status(400).json({
+  //         error: "User with that ID does not exist",
+  //       });
+  //     }
+
+  //     User.findOneAndUpdate(
+  //       { _id: id },
+  //       {
+  //         $unset: {
+  //           refreshToken: "",
+  //           accessToken: "",
+  //           givenName: "",
+  //           familyName: "",
+  //           name: "",
+  //           picture: "",
+  //         },
+  //       },
+  //       (err, success) => {
+  //         if (err) {
+  //           return res.status(400).json({
+  //             error:
+  //               "Error removing fields for removing google calendar token!",
+  //           });
+  //         }
+  //         res.send("Remove google calendar token successful!");
+  //       }
+  //     );
+
+  //     // try {
+  //     //   const response = await oauth2Client.revokeToken(user.accessToken);
+  //     //   if (response.status) {
+
+  //     //   }
+  //     //   //console.log(response);
+  //     //   // oauth2Client.setCredentials({ refresh_token: user.refreshToken });
+  //     //   // oauth2Client.revokeCredentials();
+  //     //   // console.log(response);
+  //     // } catch (e) {
+  //     //   console.log(e);
+  //     // }
+  //   });
+  // } catch (e) {
+  //   return res.status(400).json({
+  //     error: "Error deleting token",
+  //   });
+  // }
+};
+
+// exports.passwordCheck = (req, res) => {
+//   const { email, password } = req.body;
+//   // console.table({ email, password });
+//   User.findOne({ email }).exec((err, user) => {
+//     if (err || !user) {
+//       return res.status(400).json({
+//         error: "User with that email does not exist",
+//       });
+//     }
+//     // authenticate
+//     if (!user.authenticate(password)) {
+//       return res.status(400).json({
+//         error: "Email and password do not match",
+//       });
+//     }
+//     res.send("Approved!");
+//   });
+// };
+
+exports.updateUser = (req, res) => {
+  const { email, password, username, newPassword } = req.body;
+  // console.table({ email, password });
+  User.findOne({ email }).exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "User with that email does not exist",
+      });
+    }
+    // authenticate
+    if (!user.authenticate(password)) {
+      return res.status(400).json({
+        error: "Email and password do not match",
+      });
+    }
+    if (newPassword && newPassword !== "") {
+      user.password = newPassword;
+    }
+    user.username = username;
+
+    user.save((err, success) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Error updating reminder",
+        });
+      }
+      console.log(success);
+      res.send("Approved!");
+    });
+  });
 };
