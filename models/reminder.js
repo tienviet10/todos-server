@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema;
 
-const userSchema = new mongoose.Schema(
+const reminderSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -43,4 +43,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Reminder", userSchema);
+module.exports = mongoose.model("Reminder", reminderSchema);

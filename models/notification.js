@@ -18,12 +18,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
     },
-    sharedWith: [
-      {
-        type: ObjectId,
-        ref: "User",
-      },
-    ],
     adminPhoto: {
       type: String,
     },
@@ -35,6 +29,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    sharedReminder: {
+      type: Boolean,
+      required: true,
+    },
+    sharedWith: [
+      {
+        type: ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

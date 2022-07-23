@@ -51,6 +51,24 @@ const userSchema = new mongoose.Schema(
     accessToken: {
       type: String,
     },
+    pendingFriendsRequest: [
+      {
+        type: ObjectId,
+        ref: "User",
+      },
+    ],
+    acceptedFriends: [
+      {
+        type: ObjectId,
+        ref: "User",
+      },
+    ],
+    sentFriendRequests: [
+      {
+        type: ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const UserPublicInfo = require("../models/users-public-info");
 // const Link = require("../models/link");
 //const AWS = require("aws-sdk");
 const jwt = require("jsonwebtoken");
@@ -87,8 +88,25 @@ exports.register = (req, res) => {
           error: "Error saving user in database. Try later",
         });
       }
-      return res.json({
-        message: "Registration success. Please login.",
+
+      //Create another user public information for searching in "users-public-info" folder
+      // register new user
+      const newUserPublicInfo = new UserPublicInfo({
+        username,
+        email,
+        picture: "",
+      });
+      console.log("first");
+      newUserPublicInfo.save((err, result) => {
+        if (err) {
+          return res.status(401).json({
+            error: "Error saving user in database. Try later",
+          });
+        }
+
+        return res.json({
+          message: "Registration success. Please login.",
+        });
       });
     });
   });
@@ -509,8 +527,121 @@ exports.updateUser = (req, res) => {
           error: "Error updating reminder",
         });
       }
-      console.log(success);
+
       res.send("Approved!");
+    });
+  });
+};
+
+exports.getAcceptedFriends = (req, res) => {
+  User.findOne({ _id: req.auth._id })
+    .select("sentFriendRequests acceptedFriends pendingFriendsRequest -_id")
+    .populate("acceptedFriends", "username picture email -_id")
+    .populate("sentFriendRequests", "username picture email -_id")
+    .populate("pendingFriendsRequest", "username picture email -_id")
+    .sort({ createdAt: -1 })
+    .exec((err, friendsList) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Could not load friend list",
+        });
+      }
+
+      res.json(friendsList);
+    });
+};
+
+exports.usersSearch = (req, res) => {
+  const { searchTerm } = req.body;
+  // console.table({ email, password });
+  if (searchTerm.includes("@")) {
+    UserPublicInfo.find({ email: new RegExp(searchTerm, "i") })
+      .select("_id picture username email")
+      .exec((err, data) => {
+        if (err || !data) {
+          return res.status(400).json({
+            error: "Users list does not exist",
+          });
+        }
+        res.json(data);
+      });
+  } else {
+    UserPublicInfo.find({ username: new RegExp(searchTerm, "i") })
+      .select("_id picture username email")
+      .exec((err, data) => {
+        if (err || !data) {
+          return res.status(400).json({
+            error: "Users list does not exist",
+          });
+        }
+        console.log(data);
+        res.json(data);
+      });
+  }
+};
+
+exports.pendingFriends = (req, res) => {
+  const { email } = req.body;
+
+  //Add requested in the pendingFriendsRequest of the friend that the user wanted to add
+  User.findOneAndUpdate(
+    { email },
+    { $push: { pendingFriendsRequest: req.auth._id } }
+  ).exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "User with that email does not exist",
+      });
+    }
+
+    //Remember the friend that has been sent
+    User.findOneAndUpdate(
+      { _id: req.auth._id },
+      { $push: { sentFriendRequests: user._id } }
+    ).exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: "User with that email does not exist",
+        });
+      }
+
+      res.send("Friend request sent!");
+    });
+  });
+};
+
+exports.acceptedFriends = (req, res) => {
+  const { email } = req.body;
+
+  // Find the friend the user want to accept
+  User.findOneAndUpdate(
+    { email },
+    {
+      $push: { acceptedFriends: req.auth._id },
+      $pull: { sentFriendRequests: req.auth._id },
+    }
+  ).exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "User with that email does not exist",
+      });
+    }
+
+    //Change the user info
+    User.findOneAndUpdate(
+      { _id: req.auth._id },
+      {
+        $push: { acceptedFriends: user._id },
+        $pull: { pendingFriendsRequest: user._id },
+      }
+    ).exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: "User with that email does not exist",
+        });
+      }
+
+      res.send("Friend request sent!");
     });
   });
 };

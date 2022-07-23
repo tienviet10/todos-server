@@ -23,6 +23,10 @@ const {
   deleteTokens,
   //passwordCheck,
   updateUser,
+  getAcceptedFriends,
+  usersSearch,
+  pendingFriends,
+  acceptedFriends,
 } = require("../controllers/auth");
 
 router.post("/v1/register", userRegisterValidator, runValidation, register);
@@ -33,6 +37,14 @@ router.post("/v1/google-tokens", requireSignIn, createToken);
 router.delete("/v1/google-tokens/:id", requireSignIn, deleteTokens);
 //router.post("/v1/password-confirmation", requireSignIn, passwordCheck);
 router.put("/v1/user-info", requireSignIn, updateUser);
+
+router.get("/v1/friends", requireSignIn, getAcceptedFriends);
+
+router.post("/v1/friends", requireSignIn, usersSearch);
+
+router.put("/v1/friends/pending", requireSignIn, pendingFriends);
+
+router.put("/v1/friends/accepted", requireSignIn, acceptedFriends);
 
 // router.put(
 //   "/forgot-password",

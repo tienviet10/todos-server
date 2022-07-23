@@ -4,7 +4,7 @@ const Reminder = require("../models/reminder");
 
 exports.readNotifications = (req, res) => {
   Notification.find({
-    postedBy: req.auth._id,
+    sharedWith: { $elemMatch: { $eq: req.auth._id } },
     status: "active",
     remindedAt: {
       $gte: new Date(new Date().setHours(0, 0, 0)),

@@ -10,18 +10,28 @@ const {
   readInactive,
   readAReminder,
   readSevenDays,
-  deactivePastDue,
+  inactivePastDue,
   updateAll,
+  createSharedReminder,
+  readSharedReminder,
+  updateAllSharedReminders,
+  inactivePastDueSharedReminders,
+  updateSharedReminder,
+  removeSharedReminder,
+  readSharedInactive,
 } = require("../controllers/reminder");
 
 const { runValidation } = require("../validators");
-const { reminderCheck } = require("../validators/reminder");
+const {
+  reminderCheck,
+  sharedReminderCheck,
+} = require("../validators/reminder");
 
 router.get("/v1/reminders/active", requireSignIn, read);
 
 router.get("/v1/reminders/past", requireSignIn, readInactive);
 
-router.put("/v1/reminders/past", requireSignIn, deactivePastDue);
+router.put("/v1/reminders/past", requireSignIn, inactivePastDue);
 
 router.get("/v1/reminders/seven-days-reminders", requireSignIn, readSevenDays);
 
@@ -40,5 +50,29 @@ router.put("/v1/reminder/:id", requireSignIn, update);
 router.delete("/v1/reminder/:id", requireSignIn, remove);
 
 router.get("/v1/reminder/:id", requireSignIn, readAReminder);
+
+router.post(
+  "/v1/shared-reminder",
+  sharedReminderCheck,
+  runValidation,
+  requireSignIn,
+  createSharedReminder
+);
+
+router.get("/v1/shared-reminders/active", requireSignIn, readSharedReminder);
+
+router.put("/v1/shared-reminders", requireSignIn, updateAllSharedReminders);
+
+router.put(
+  "/v1/shared-reminders/past",
+  requireSignIn,
+  inactivePastDueSharedReminders
+);
+
+router.put("/v1/shared-reminder/:id", requireSignIn, updateSharedReminder);
+
+router.delete("/v1/shared-reminder/:id", requireSignIn, removeSharedReminder);
+
+router.get("/v1/shared-reminders/past", requireSignIn, readSharedInactive);
 
 module.exports = router;
