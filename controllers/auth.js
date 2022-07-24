@@ -293,7 +293,7 @@ exports.requireSignIn = expressjwt({
 //         .catch((error) => {
 //           console.log("ses reset pw failed", error);
 //           return res.json({
-//             message: `We could not vefiry your email. Try later.`,
+//             message: `We could not verify your email. Try later.`,
 //           });
 //         });
 //     });
@@ -554,30 +554,52 @@ exports.getAcceptedFriends = (req, res) => {
 exports.usersSearch = (req, res) => {
   const { searchTerm } = req.body;
   // console.table({ email, password });
-  if (searchTerm.includes("@")) {
-    UserPublicInfo.find({ email: new RegExp(searchTerm, "i") })
-      .select("_id picture username email")
-      .exec((err, data) => {
-        if (err || !data) {
-          return res.status(400).json({
-            error: "Users list does not exist",
+
+  User.findOne({ _id: req.auth._id })
+    .select("sentFriendRequests acceptedFriends pendingFriendsRequest -_id")
+    .exec((err, friendsList) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Could not load friend list",
+        });
+      }
+
+      const list_friends_added = friendsList.sentFriendRequests.concat(
+        friendsList.acceptedFriends,
+        friendsList.pendingFriendsRequest
+      );
+
+      if (searchTerm.includes("@")) {
+        UserPublicInfo.find({
+          email: new RegExp(searchTerm, "i"),
+          owner: { $nin: list_friends_added },
+        })
+          .select("_id picture username email")
+          .exec((err, data) => {
+            if (err || !data) {
+              return res.status(400).json({
+                error: "Users list does not exist",
+              });
+            }
+            res.json(data);
           });
-        }
-        res.json(data);
-      });
-  } else {
-    UserPublicInfo.find({ username: new RegExp(searchTerm, "i") })
-      .select("_id picture username email")
-      .exec((err, data) => {
-        if (err || !data) {
-          return res.status(400).json({
-            error: "Users list does not exist",
+      } else {
+        UserPublicInfo.find({
+          username: new RegExp(searchTerm, "i"),
+          owner: { $nin: list_friends_added },
+        })
+          .select("_id picture username email")
+          .exec((err, data) => {
+            if (err || !data) {
+              return res.status(400).json({
+                error: "Users list does not exist",
+              });
+            }
+            console.log(data);
+            res.json(data);
           });
-        }
-        console.log(data);
-        res.json(data);
-      });
-  }
+      }
+    });
 };
 
 exports.pendingFriends = (req, res) => {
@@ -611,6 +633,42 @@ exports.pendingFriends = (req, res) => {
 };
 
 exports.acceptedFriends = (req, res) => {
+  const { email } = req.body;
+
+  // Find the friend the user want to accept
+  User.findOneAndUpdate(
+    { email },
+    {
+      $push: { acceptedFriends: req.auth._id },
+      $pull: { sentFriendRequests: req.auth._id },
+    }
+  ).exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "User with that email does not exist",
+      });
+    }
+
+    //Change the user info
+    User.findOneAndUpdate(
+      { _id: req.auth._id },
+      {
+        $push: { acceptedFriends: user._id },
+        $pull: { pendingFriendsRequest: user._id },
+      }
+    ).exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: "User with that email does not exist",
+        });
+      }
+
+      res.send("Friend request sent!");
+    });
+  });
+};
+
+exports.decliningFriends = (req, res) => {
   const { email } = req.body;
 
   // Find the friend the user want to accept

@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema(
     picture: {
       type: String,
     },
+    owner: {
+      type: ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );
