@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
     },
     reminderID: {
       type: ObjectId,
@@ -24,13 +23,14 @@ const userSchema = new mongoose.Schema(
     postedBy: {
       type: ObjectId,
       ref: "User",
+      required: true,
     },
     status: {
       type: String,
       required: true,
     },
-    sharedReminder: {
-      type: Boolean,
+    reminderTypes: {
+      type: String,
       required: true,
     },
     sharedWith: [

@@ -28,6 +28,7 @@ const {
   pendingFriends,
   acceptedFriends,
   decliningFriends,
+  getSuggestedFriends,
 } = require("../controllers/auth");
 
 router.post("/v1/register", userRegisterValidator, runValidation, register);
@@ -43,11 +44,13 @@ router.get("/v1/friends", requireSignIn, getAcceptedFriends);
 
 router.post("/v1/friends", requireSignIn, usersSearch);
 
-router.put("/v1/friends/pending", requireSignIn, pendingFriends);
+router.put("/v1/pending-friends", requireSignIn, pendingFriends);
 
-router.put("/v1/friends/accepted", requireSignIn, acceptedFriends);
+router.put("/v1/accepted-friends", requireSignIn, acceptedFriends);
 
-router.put("/v1/friends/declining", requireSignIn, decliningFriends);
+router.put("/v1/declined-friends", requireSignIn, decliningFriends);
+
+router.post("/v1/suggested-friends", requireSignIn, getSuggestedFriends);
 
 // router.put(
 //   "/forgot-password",

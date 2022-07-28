@@ -2,9 +2,24 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema;
 
 const RolesUsersSchema = mongoose.Schema({
-  admin: [String],
-  editor: [String],
-  viewer: [String],
+  admin: [
+    {
+      type: ObjectId,
+      ref: "User",
+    },
+  ],
+  editor: [
+    {
+      type: ObjectId,
+      ref: "User",
+    },
+  ],
+  viewer: [
+    {
+      type: ObjectId,
+      ref: "User",
+    },
+  ],
 });
 
 const googleCalendarUserSchema = mongoose.Schema({

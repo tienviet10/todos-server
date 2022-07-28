@@ -55,21 +55,18 @@ const userSchema = new mongoose.Schema(
       {
         type: ObjectId,
         ref: "User",
-        unique: true,
       },
     ],
     acceptedFriends: [
       {
         type: ObjectId,
         ref: "User",
-        unique: true,
       },
     ],
     sentFriendRequests: [
       {
         type: ObjectId,
         ref: "User",
-        unique: true,
       },
     ],
   },

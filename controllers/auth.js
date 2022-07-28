@@ -12,6 +12,8 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.CLIENT_URL
 );
 
+const Notification = require("../models/notification");
+
 // const {
 //   registerEmailParams,
 //   forgotPasswordEmailParams,
@@ -96,7 +98,7 @@ exports.register = (req, res) => {
         email,
         picture: "",
       });
-      console.log("first");
+
       newUserPublicInfo.save((err, result) => {
         if (err) {
           return res.status(401).json({
@@ -595,7 +597,7 @@ exports.usersSearch = (req, res) => {
                 error: "Users list does not exist",
               });
             }
-            console.log(data);
+
             res.json(data);
           });
       }
@@ -608,7 +610,7 @@ exports.pendingFriends = (req, res) => {
   //Add requested in the pendingFriendsRequest of the friend that the user wanted to add
   User.findOneAndUpdate(
     { email },
-    { $push: { pendingFriendsRequest: req.auth._id } }
+    { $addToSet: { pendingFriendsRequest: req.auth._id } }
   ).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
@@ -619,15 +621,33 @@ exports.pendingFriends = (req, res) => {
     //Remember the friend that has been sent
     User.findOneAndUpdate(
       { _id: req.auth._id },
-      { $push: { sentFriendRequests: user._id } }
-    ).exec((err, user) => {
-      if (err || !user) {
+      { $addToSet: { sentFriendRequests: user._id } }
+    ).exec((err, ownerUser) => {
+      if (err || !ownerUser) {
         return res.status(400).json({
           error: "User with that email does not exist",
         });
       }
 
-      res.send("Friend request sent!");
+      const notification = new Notification({
+        seen: false,
+        postedBy: req.auth._id,
+        status: "active",
+        sharedWith: [user._id],
+        reminderTypes: "friendRequest",
+        remindedAt: new Date(new Date().setDate(new Date().getDate() + 2)),
+      });
+
+      //Save notification to mongoDB
+      notification.save((err, notificationData) => {
+        if (err) {
+          return res.status(400).json({
+            error: "Error in sending notification.",
+          });
+        }
+
+        res.send("Friend request sent!");
+      });
     });
   });
 };
@@ -639,8 +659,8 @@ exports.acceptedFriends = (req, res) => {
   User.findOneAndUpdate(
     { email },
     {
-      $push: { acceptedFriends: req.auth._id },
       $pull: { sentFriendRequests: req.auth._id },
+      $addToSet: { acceptedFriends: req.auth._id },
     }
   ).exec((err, user) => {
     if (err || !user) {
@@ -653,17 +673,32 @@ exports.acceptedFriends = (req, res) => {
     User.findOneAndUpdate(
       { _id: req.auth._id },
       {
-        $push: { acceptedFriends: user._id },
         $pull: { pendingFriendsRequest: user._id },
+        $addToSet: { acceptedFriends: user._id },
       }
-    ).exec((err, user) => {
-      if (err || !user) {
+    ).exec((err, ownerUser) => {
+      if (err || !ownerUser) {
         return res.status(400).json({
-          error: "User with that email does not exist",
+          error: "User does not exist",
         });
       }
 
-      res.send("Friend request sent!");
+      Notification.findOneAndUpdate(
+        {
+          reminderTypes: "friendRequest",
+          postedBy: user._id,
+          status: "active",
+        },
+        { status: "inactive" }
+      ).exec((err, updated) => {
+        if (err) {
+          return res.status(400).json({
+            error: "Error finding the notification",
+          });
+        }
+
+        res.send("Friend request sent!");
+      });
     });
   });
 };
@@ -675,7 +710,6 @@ exports.decliningFriends = (req, res) => {
   User.findOneAndUpdate(
     { email },
     {
-      $push: { acceptedFriends: req.auth._id },
       $pull: { sentFriendRequests: req.auth._id },
     }
   ).exec((err, user) => {
@@ -689,17 +723,66 @@ exports.decliningFriends = (req, res) => {
     User.findOneAndUpdate(
       { _id: req.auth._id },
       {
-        $push: { acceptedFriends: user._id },
         $pull: { pendingFriendsRequest: user._id },
       }
-    ).exec((err, user) => {
-      if (err || !user) {
+    ).exec((err, ownerUser) => {
+      if (err || !ownerUser) {
         return res.status(400).json({
-          error: "User with that email does not exist",
+          error: "User does not exist",
         });
       }
 
-      res.send("Friend request sent!");
+      Notification.findOneAndUpdate(
+        {
+          reminderTypes: "friendRequest",
+          postedBy: user._id,
+          status: "active",
+        },
+        { status: "inactive" }
+      ).exec((err, updated) => {
+        if (err) {
+          return res.status(400).json({
+            error: "Error finding the notification.",
+          });
+        }
+
+        res.send("Friend request sent!");
+      });
     });
   });
+};
+
+exports.getSuggestedFriends = (req, res) => {
+  const { searchUser } = req.body;
+
+  if (searchUser.includes("@")) {
+    User.find({
+      acceptedFriends: { $elemMatch: { $eq: req.auth._id } },
+      email: new RegExp(searchUser, "i"),
+    })
+      .select("_id picture username email")
+      .exec((err, data) => {
+        if (err || !data) {
+          return res.status(400).json({
+            error: "Users list does not exist",
+          });
+        }
+        res.json(data);
+      });
+  } else {
+    User.find({
+      acceptedFriends: { $elemMatch: { $eq: req.auth._id } },
+      username: new RegExp(searchUser, "i"),
+    })
+      .select("_id picture username email")
+      .exec((err, data) => {
+        if (err || !data) {
+          return res.status(400).json({
+            error: "Users list does not exist",
+          });
+        }
+
+        res.json(data);
+      });
+  }
 };
