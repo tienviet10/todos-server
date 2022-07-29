@@ -19,6 +19,7 @@ const {
   updateSharedReminder,
   removeSharedReminder,
   readSharedInactive,
+  readASharedReminder,
 } = require("../controllers/reminder");
 
 const { runValidation } = require("../validators");
@@ -68,6 +69,8 @@ router.put(
   requireSignIn,
   inactivePastDueSharedReminders
 );
+
+router.get("/v1/shared-reminder/:id", requireSignIn, readASharedReminder);
 
 router.put("/v1/shared-reminder/:id", requireSignIn, updateSharedReminder);
 

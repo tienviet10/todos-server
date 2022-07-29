@@ -1008,6 +1008,27 @@ exports.readAReminder = (req, res) => {
   });
 };
 
+exports.readASharedReminder = (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  SharedReminder.findOne({ _id: id })
+    .populate({
+      path: "groupUsers",
+      populate: {
+        path: "editor",
+        select: { _id: 1, username: 1, email: 1, picture: 1 },
+      },
+    })
+    .exec((err, updated) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Error finding the reminder",
+        });
+      }
+      res.json(updated);
+    });
+};
+
 exports.createSharedReminder = (req, res) => {
   try {
     //Get user to get refresh_token for google calendar
