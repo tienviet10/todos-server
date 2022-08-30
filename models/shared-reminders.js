@@ -72,6 +72,12 @@ const sharedReminderSchema = new mongoose.Schema(
     groupUsers: {
       type: RolesUsersSchema,
     },
+    pendingRequest: [
+      {
+        type: ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

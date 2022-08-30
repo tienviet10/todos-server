@@ -17,9 +17,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
     },
-    adminPhoto: {
-      type: String,
-    },
     postedBy: {
       type: ObjectId,
       ref: "User",
@@ -39,6 +36,13 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    mainNotification: {
+      type: ObjectId,
+      ref: "Notification",
+    },
+    acceptOrDeclineFriend: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

@@ -87,7 +87,8 @@ exports.register = (req, res) => {
     newUser.save((err, result) => {
       if (err) {
         return res.status(401).json({
-          error: "Error saving user in database. Try later",
+          error:
+            "Error saving your information to the database. Please try again!",
         });
       }
 
@@ -102,7 +103,8 @@ exports.register = (req, res) => {
       newUserPublicInfo.save((err, result) => {
         if (err) {
           return res.status(401).json({
-            error: "Error saving user in database. Try later",
+            error:
+              "Error saving user public information to the database. Try again later!",
           });
         }
 
@@ -162,32 +164,30 @@ exports.register = (req, res) => {
 
 exports.login = (req, res) => {
   const { email, password } = req.body;
-  // console.table({ email, password });
   User.findOne({ email }).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
-        error: "User with that email does not exist. Please register.",
+        error: "User with that email does not exist. Please register!",
       });
     }
-    // authenticate
+    // authenticate to log in
     if (!user.authenticate(password)) {
       return res.status(400).json({
         error: "Email and password do not match",
       });
     }
-    // generate token and send to client
+    // generate token that are used for 5 days and send to client
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "5d",
     });
-    // const { _id, username, email, role } = user;
 
     return res.json({
       token,
-      // user: { _id, username, email, role },
     });
   });
 };
 
+//// To Authenticate user whenever front-end request to open a certain pages that needs authentication
 exports.userFromToken = (req, res) => {
   const _id = req.auth._id;
 
@@ -198,9 +198,8 @@ exports.userFromToken = (req, res) => {
       });
     }
 
-    // generate token and send to client
+    // generate token that are used for 5 days and send to client.
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      // expiresIn: "5d",
       expiresIn: "5d",
     });
     const { _id, username, email, role, givenName, name, picture } = user;
@@ -366,6 +365,7 @@ exports.requireSignIn = expressjwt({
 //   });
 // };
 
+//// Create a google calendar refresh token and store it to MongoDB.
 exports.createToken = async (req, res) => {
   try {
     const { code } = req.body;
@@ -390,7 +390,7 @@ exports.createToken = async (req, res) => {
         (err, success) => {
           if (err) {
             return res.status(400).json({
-              error: "Error updating reminder notification",
+              error: "Error updating tokens to the database for users.",
             });
           }
           res.send("Authorization successful!");
@@ -398,16 +398,17 @@ exports.createToken = async (req, res) => {
       );
     } else {
       return res.status(400).json({
-        error: "Error authorizing token 2",
+        error: "Unsuccessful request to google calendar server!",
       });
     }
   } catch (e) {
     return res.status(400).json({
-      error: "Error authorizing token 1",
+      error: "Error creating google calendar token!",
     });
   }
 };
 
+//Delete google calendar token in MongoDb
 exports.deleteTokens = async (req, res) => {
   const { id } = req.params;
 
@@ -426,62 +427,12 @@ exports.deleteTokens = async (req, res) => {
     (err, success) => {
       if (err) {
         return res.status(400).json({
-          error: "Error removing fields for removing google calendar token!",
+          error: "Error removing fields when removing google calendar token!",
         });
       }
       res.send("Remove google calendar token successful!");
     }
   );
-  // try {
-
-  //   User.findOne({ _id: id }).exec(async (err, user) => {
-  //     if (err || !user) {
-  //       return res.status(400).json({
-  //         error: "User with that ID does not exist",
-  //       });
-  //     }
-
-  //     User.findOneAndUpdate(
-  //       { _id: id },
-  //       {
-  //         $unset: {
-  //           refreshToken: "",
-  //           accessToken: "",
-  //           givenName: "",
-  //           familyName: "",
-  //           name: "",
-  //           picture: "",
-  //         },
-  //       },
-  //       (err, success) => {
-  //         if (err) {
-  //           return res.status(400).json({
-  //             error:
-  //               "Error removing fields for removing google calendar token!",
-  //           });
-  //         }
-  //         res.send("Remove google calendar token successful!");
-  //       }
-  //     );
-
-  //     // try {
-  //     //   const response = await oauth2Client.revokeToken(user.accessToken);
-  //     //   if (response.status) {
-
-  //     //   }
-  //     //   //console.log(response);
-  //     //   // oauth2Client.setCredentials({ refresh_token: user.refreshToken });
-  //     //   // oauth2Client.revokeCredentials();
-  //     //   // console.log(response);
-  //     // } catch (e) {
-  //     //   console.log(e);
-  //     // }
-  //   });
-  // } catch (e) {
-  //   return res.status(400).json({
-  //     error: "Error deleting token",
-  //   });
-  // }
 };
 
 // exports.passwordCheck = (req, res) => {
@@ -503,15 +454,17 @@ exports.deleteTokens = async (req, res) => {
 //   });
 // };
 
+// Update user with new password
 exports.updateUser = (req, res) => {
   const { email, password, username, newPassword } = req.body;
-  // console.table({ email, password });
+
   User.findOne({ email }).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: "User with that email does not exist",
       });
     }
+
     // authenticate
     if (!user.authenticate(password)) {
       return res.status(400).json({
@@ -526,7 +479,7 @@ exports.updateUser = (req, res) => {
     user.save((err, success) => {
       if (err) {
         return res.status(400).json({
-          error: "Error updating reminder",
+          error: "Error updating user to the database",
         });
       }
 
@@ -535,6 +488,7 @@ exports.updateUser = (req, res) => {
   });
 };
 
+// Get array of sentFriendRequests, sentFriendRequests, and pendingFriendsRequest
 exports.getAcceptedFriends = (req, res) => {
   User.findOne({ _id: req.auth._id })
     .select("sentFriendRequests acceptedFriends pendingFriendsRequest -_id")
@@ -553,9 +507,9 @@ exports.getAcceptedFriends = (req, res) => {
     });
 };
 
+/// Search user in UserPublicInfo folder
 exports.usersSearch = (req, res) => {
   const { searchTerm } = req.body;
-  // console.table({ email, password });
 
   User.findOne({ _id: req.auth._id })
     .select("sentFriendRequests acceptedFriends pendingFriendsRequest -_id")
@@ -580,7 +534,7 @@ exports.usersSearch = (req, res) => {
           .exec((err, data) => {
             if (err || !data) {
               return res.status(400).json({
-                error: "Users list does not exist",
+                error: "Cannot find an email match",
               });
             }
             res.json(data);
@@ -594,7 +548,7 @@ exports.usersSearch = (req, res) => {
           .exec((err, data) => {
             if (err || !data) {
               return res.status(400).json({
-                error: "Users list does not exist",
+                error: "Cannot find a username match",
               });
             }
 
@@ -604,6 +558,7 @@ exports.usersSearch = (req, res) => {
     });
 };
 
+//// Add pending request to the friend that the current user want to add
 exports.pendingFriends = (req, res) => {
   const { email } = req.body;
 
@@ -614,7 +569,7 @@ exports.pendingFriends = (req, res) => {
   ).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
-        error: "User with that email does not exist",
+        error: "Friend with that email does not exist",
       });
     }
 
@@ -625,7 +580,7 @@ exports.pendingFriends = (req, res) => {
     ).exec((err, ownerUser) => {
       if (err || !ownerUser) {
         return res.status(400).json({
-          error: "User with that email does not exist",
+          error: "User with your id does not exist",
         });
       }
 
@@ -635,14 +590,14 @@ exports.pendingFriends = (req, res) => {
         status: "active",
         sharedWith: [user._id],
         reminderTypes: "friendRequest",
-        remindedAt: new Date(new Date().setDate(new Date().getDate() + 2)),
+        // remindedAt: new Date(new Date().setDate(new Date().getDate() + 2)),
       });
 
       //Save notification to mongoDB
       notification.save((err, notificationData) => {
         if (err) {
           return res.status(400).json({
-            error: "Error in sending notification.",
+            error: "Error in creating a new friend request notification.",
           });
         }
 
@@ -665,7 +620,7 @@ exports.acceptedFriends = (req, res) => {
   ).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
-        error: "User with that email does not exist",
+        error: "The friend with that email does not exist",
       });
     }
 
@@ -693,7 +648,7 @@ exports.acceptedFriends = (req, res) => {
       ).exec((err, updated) => {
         if (err) {
           return res.status(400).json({
-            error: "Error finding the notification",
+            error: "Error finding the friend request notification",
           });
         }
 
@@ -703,6 +658,7 @@ exports.acceptedFriends = (req, res) => {
   });
 };
 
+//Decline friend request
 exports.decliningFriends = (req, res) => {
   const { email } = req.body;
 
@@ -715,7 +671,7 @@ exports.decliningFriends = (req, res) => {
   ).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
-        error: "User with that email does not exist",
+        error: "Friend with that email does not exist",
       });
     }
 
@@ -728,7 +684,7 @@ exports.decliningFriends = (req, res) => {
     ).exec((err, ownerUser) => {
       if (err || !ownerUser) {
         return res.status(400).json({
-          error: "User does not exist",
+          error: "User with the ID does not exist",
         });
       }
 
@@ -742,7 +698,8 @@ exports.decliningFriends = (req, res) => {
       ).exec((err, updated) => {
         if (err) {
           return res.status(400).json({
-            error: "Error finding the notification.",
+            error:
+              "Error finding the friend request notification to inactivate.",
           });
         }
 
@@ -752,6 +709,7 @@ exports.decliningFriends = (req, res) => {
   });
 };
 
+//// Suggested friends from search word user entered
 exports.getSuggestedFriends = (req, res) => {
   const { searchUser } = req.body;
 
@@ -764,7 +722,7 @@ exports.getSuggestedFriends = (req, res) => {
       .exec((err, data) => {
         if (err || !data) {
           return res.status(400).json({
-            error: "Users list does not exist",
+            error: "Users with the email do not exist",
           });
         }
         res.json(data);
@@ -778,7 +736,7 @@ exports.getSuggestedFriends = (req, res) => {
       .exec((err, data) => {
         if (err || !data) {
           return res.status(400).json({
-            error: "Users list does not exist",
+            error: "Users with the username do not exist",
           });
         }
 
