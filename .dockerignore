@@ -1,0 +1,13 @@
+#node_modules
+**/node_modules
+
+.parcel-cache
+
+# OS
+.DS_Store
+
+# Git
+.git
+
+#Environment
+.env
