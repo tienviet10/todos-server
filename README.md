@@ -10,7 +10,7 @@
   </div>  
 </h1>
 
-<h4 align="center">This backend application is written in Node.js (<a href="https://expressjs.com/">Express.js</a>) and deployed automatically to <a href="https://fly.io/">fly.io</a> on merges to master via GitHub Actions. The frontend made in React.js can be access at this <a href="https://github.com/tienviet10/todos-client">link.</a></h4>
+<h4 align="center">This backend application is written in Node.js (<a href="https://expressjs.com/">Express.js</a>) and deployed automatically to <a href="https://fly.io/">fly.io</a> on merges to master via GitHub Actions. The frontend made in React.js can be access at this <a href="https://github.com/tienviet10/todos-client/">link.</a></h4>
 
 <p align="center">
   <a href="#key-features">Tech Stack & Features</a> •
@@ -66,6 +66,8 @@ $ npm install
 ```sh
 $ npm run dev
 ```
+
+The API will run locally at: http://localhost:8000/
 
 **Database**
 
