@@ -69,7 +69,7 @@ $ npm run dev
 
 **Database**
 
-Set up a [MangoDB](https://www.mongodb.com) account:
+Set up a [MongoDB](https://www.mongodb.com) account:
 1. Sign up for an account
 2. In Quickstart, create a user with a password
 3. Add Your Current IP Address to IP Access List
