@@ -12,7 +12,6 @@
 <p align="center">
   <a href="#key-features">Tech Stack & Features</a> •
   <a href="#how-to-use">How To Use</a> •
-  <a href="#building">Building</a> •
   <a href="#deployment-process">Deployment Process</a> •
   <a href="#todo">TODO</a> •
 </p>
@@ -23,37 +22,16 @@
 
 ## Tech Stack & Features
 
+* Automatically restarting Node application when file changes using [Nodemon](https://nodemon.io)
+* Securely transmitting information between parties with [JSON Web Token](https://github.com/auth0/node-jsonwebtoken#readme)
+* Setting secured HTTP headers using [Helmet](https://helmetjs.github.io)
+* Google Calendar integration through [googleapis](https://github.com/googleapis/google-api-nodejs-client#readme)
+* Automatically load environment variables from a . env file into the process using [dotenv](https://github.com/motdotla/dotenv#readme)
+ 
 ## How To Use
 
 To clone and run this application, you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
 
-1. Create a folder and clone this repository
-
-```sh
-$ git clone https://github.com/amitmerchant1990/electron-markdownify
-```
-
-2. Move to the correct directory
-
-```sh
-$ cd todos-client
-```
-
-3. Install dependencies
-
-```sh
-$ npm install
-```
-
-4. Run the application
-
-```sh
-$ npm start
-```
-
-## Building
-
-Run 'npm run build' and use the newly created 'build' folder for deployment.
 
 ## Deployment Process
 
