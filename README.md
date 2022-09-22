@@ -70,10 +70,10 @@ $ npm run dev
 **Database**
 
 Set up a [MangoDB](https://www.mongodb.com) account:
-- Sign up for an account
-- In Quickstart, create a user with a password
-- Add Your Current IP Address to IP Access List
-- Go to your Database, create a cluster or choose a cluster to be connected. Press "Connect" button and get the connection string. This connection string should be added to .env file with the variable named DATABASE_CLOUD
+1. Sign up for an account
+2. In Quickstart, create a user with a password
+3. Add Your Current IP Address to IP Access List
+4. Go to your Database, create a cluster or choose a cluster to be connected. Press "Connect" button and get the connection string. This connection string should be added to .env file with the variable named DATABASE_CLOUD
 
 **Google Calendar Integration**
 
