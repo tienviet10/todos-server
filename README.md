@@ -13,13 +13,9 @@
   <a href="#key-features">Tech Stack & Features</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#building">Building</a> •
-  <a href="#usage">Usage</a> •
+  <a href="#deployment">CI/CD & Deployment Process</a> •
   <a href="#todo">TODO</a> •
 </p>
-
-<div align="center">
-  <a href=""><img src="https://user-images.githubusercontent.com/70352144/191378535-68036f59-8a9a-4d27-b4a0-165614571996.gif" alt="Application" ></a>
-</div>
 
 ## Tech Stack & Features
 
@@ -55,11 +51,11 @@ $ npm start
 
 Run 'npm run build' and use the newly created 'build' folder for deployment.
 
-## Usage
+## CI/CD & Deployment Process
 
-
-
+CI/CD to be handled using GitHub actions.
 
 ## TODO
 
-
+* Support Google Calendar integration for shared reminders
+* Support roles in shared reminders
