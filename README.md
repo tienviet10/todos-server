@@ -13,9 +13,13 @@
   <a href="#key-features">Tech Stack & Features</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#building">Building</a> •
-  <a href="#deployment">CI/CD & Deployment Process</a> •
+  <a href="#deployment-process">Deployment Process</a> •
   <a href="#todo">TODO</a> •
 </p>
+
+<div align="center">
+  <a href="https://github.com/tienviet10/todos-server/actions/workflows/main.yml"><img src="https://github.com/tienviet10/todos-server/actions/workflows/main.yml/badge.svg" alt="Deployment Badge" ></a>
+</div>
 
 ## Tech Stack & Features
 
@@ -51,7 +55,7 @@ $ npm start
 
 Run 'npm run build' and use the newly created 'build' folder for deployment.
 
-## CI/CD & Deployment Process
+## Deployment Process
 
 CI/CD to be handled using GitHub actions.
 
