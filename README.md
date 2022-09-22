@@ -75,6 +75,7 @@ Set up a [MangoDB](https://www.mongodb.com) account:
 3. Add Your Current IP Address to IP Access List
 4. Go to your Database, create a cluster or choose a cluster to be connected. Press "Connect" button and get the connection string. This connection string should be added to .env file with the variable named DATABASE_CLOUD
 
+
 **Google Calendar Integration**
 
 1. Sign up and log into [Google Cloud Console](https://console.cloud.google.com/)
