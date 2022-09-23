@@ -10,11 +10,11 @@
   </div>  
 </h1>
 
-<h4 align="center">This backend application is written in Node.js (<a href="https://expressjs.com/">Express.js</a>) and deployed automatically to <a href="https://fly.io/">fly.io</a> on merges to master via GitHub Actions. The frontend made in React.js can be access at this <a href="https://github.com/tienviet10/todos-client/">link.</a></h4>
+<h4 align="center">This backend application is written in Node.js (<a href="https://expressjs.com/">Express.js</a>) and deployed automatically to <a href="https://fly.io/">fly.io</a> on merges to master via GitHub Actions. The frontend made in React.js can be accessed at this <a href="https://github.com/tienviet10/todos-client/">link.</a></h4>
 
 <p align="center">
   <a href="#key-features">Tech Stack & Features</a> •
-  <a href="#running-locally">Running locally</a> •
+  <a href="#running-locally">Running Locally</a> •
   <a href="#deployment-process">Deployment Process</a> •
   <a href="#todo">TODO</a>
 </p>
@@ -23,13 +23,13 @@
 
 ## Tech Stack & Features
 
-* Automatically restarting Node application when file changes using [Nodemon](https://nodemon.io)
+* Automatically restarting Node application when there are file changes using [Nodemon](https://nodemon.io)
 * Securely transmitting information between parties with [JSON Web Token](https://github.com/auth0/node-jsonwebtoken#readme)
-* Setting secured HTTP headers using [Helmet](https://helmetjs.github.io)
+* Setting secure HTTP headers using [Helmet](https://helmetjs.github.io)
 * Google Calendar integration through [googleapis](https://github.com/googleapis/google-api-nodejs-client#readme)
-* Automatically load environment variables from a . env file into the process using [dotenv](https://github.com/motdotla/dotenv#readme)
+* Automatically load environment variables from a .env file into the process using [dotenv](https://github.com/motdotla/dotenv#readme)
  
-## Running locally
+## Running Locally
 
 **Prerequisites**
 
@@ -86,7 +86,7 @@ Set up a [MongoDB](https://www.mongodb.com) account:
 
 ## Deployment Process
 
-CI/CD to be handled using GitHub actions.
+CI/CD using Github Actions.
 
 ## TODO
 
