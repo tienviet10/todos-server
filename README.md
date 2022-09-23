@@ -86,7 +86,7 @@ Set up a [MongoDB](https://www.mongodb.com) account:
 
 ## Deployment Process
 
-CI/CD using Github Actions.
+CI/CD using GitHub Actions.
 
 ## TODO
 
