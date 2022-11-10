@@ -326,6 +326,11 @@ exports.create = (req, res) => {
             error: "Reminder error occurred when saving to the database",
           });
         }
+        console.log("first");
+        console.log(data.title);
+        console.log(data._id);
+        console.log(data.remindedAt);
+        console.log(data.postedBy);
 
         const notification = new Notification({
           title: data.title,
@@ -334,11 +339,13 @@ exports.create = (req, res) => {
           seen: false,
           postedBy: data.postedBy,
           status: "active",
+          reminderTypes: "personal",
         });
-
+        console.log("second");
         //Save notification to mongoDB
         notification.save((err, notificationData) => {
           if (err) {
+            console.log(err);
             return res.status(400).json({
               error:
                 "Reminder notification error occurred when saving to the notification database",
